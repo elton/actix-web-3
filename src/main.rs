@@ -1,29 +1,10 @@
-use actix_web::{get, middleware, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{middleware, web, App, HttpServer};
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 use std::sync::Mutex;
 
 mod application;
-
-// curl https://localhost:8443/
-#[get("/")]
-async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello world.")
-}
-
-// curl -d 'hello' -X POST https://localhost:8443/echo
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
-}
-
-async fn manual_hello() -> impl Responder {
-    HttpResponse::Ok().body("Hey, there.")
-}
-
-// Application
-async fn index() -> impl Responder {
-    "Hello World from the scope `app`."
-}
+mod handlers;
+mod hello;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -50,25 +31,15 @@ async fn main() -> std::io::Result<()> {
         App::new()
             // enable logger
             .wrap(middleware::Logger::default())
-            .service(hello)
-            .service(echo)
-            .route("/hey", web::get().to(manual_hello)) // curl https://localhost:8443/hey
-            // curl https://localhost:8443/app/index.html scope添加统一的前缀
-            .service(web::scope("app").route("/index.html", web::get().to(index)))
-            // Application state is shared with all routes and resources within the same scope.
-            .data(application::AppState {
-                // 每个线程建立的state是独立的
-                app_name: String::from("Actix-web"),
-            })
-            .service(application::state) // curl https://localhost:8443/state
+            .data(web::JsonConfig::default().limit(4096)) // <- limit size of the payload (global configuration)
+            .service(web::scope("hello").configure(hello::routes))
             // Note: using app_data instead of data,跨线程间的数据同步
+            // curl https://localhost:8443/appstate
+            // 跨线程的数据不能放到模块里
             .app_data(counter.clone())
             .service(application::app_state)
-            // 通过配置，把资源定义放在其他模块中
-            // curl https://localhost:8443/apps
-            .configure(application::config)
-            // curl https://localhost:8443/api/test
-            .service(web::scope("/api").configure(application::scope_config))
+            .service(web::scope("/application").configure(application::routes))
+            .service(web::scope("/handlers").configure(handlers::routes))
     })
     .bind_openssl("127.0.0.1:8443", builder)?
     .run()

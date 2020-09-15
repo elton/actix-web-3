@@ -14,12 +14,11 @@
 use actix_web::{get, web, HttpResponse, Responder};
 use std::sync::Mutex;
 
-pub struct AppState {
-    pub app_name: String,
+struct AppState {
+    app_name: String,
 }
 
-#[get("/state")]
-pub async fn state(data: web::Data<AppState>) -> impl Responder {
+async fn state(data: web::Data<AppState>) -> impl Responder {
     let app_name = &data.app_name; // get app name
     format!("Hello {}!", app_name)
 }
@@ -36,18 +35,27 @@ pub async fn app_state(data: web::Data<AppStateWithCounter>) -> impl Responder {
     format!("Request number: {}", counter)
 }
 
-pub fn config(cfg: &mut web::ServiceConfig) {
+pub fn routes(cfg: &mut web::ServiceConfig) {
+    // curl https://localhost:8443/application/apps
     cfg.service(
         web::resource("/apps")
             .route(web::get().to(|| HttpResponse::Ok().body("apps")))
             .route(web::head().to(|| HttpResponse::MethodNotAllowed())),
     );
-}
-
-pub fn scope_config(cfg: &mut web::ServiceConfig) {
+    // curl https://localhost:8443/application/test
     cfg.service(
         web::resource("/test")
             .route(web::get().to(|| HttpResponse::Ok().body("test")))
             .route(web::head().to(|| HttpResponse::MethodNotAllowed())),
+    );
+    // Application state is shared with all routes and resources within the same scope
+    // curl https://localhost:8443/application/state
+    cfg.service(
+        web::resource("/state")
+            .data(AppState {
+                // 每个线程建立的state是独立的
+                app_name: String::from("Actix-web"),
+            })
+            .route(web::get().to(state)),
     );
 }
