@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use actix_web::{get, web, Error, HttpRequest, HttpResponse, Responder};
+use actix_web::{get, post, web, Error, HttpRequest, HttpResponse, Responder};
 use futures::future::{ready, Ready};
 use serde::{Deserialize, Serialize};
 
@@ -73,13 +73,13 @@ async fn responder_custom_responder() -> impl Responder {
 }
 
 /// This handler uses json extractor
-async fn index(item: web::Json<MyObj>) -> HttpResponse {
+#[post("/extractor")]
+async fn extractor(item: web::Json<MyObj>) -> HttpResponse {
     println!("model: {:?}", &item);
     HttpResponse::Ok().json(item.0) // <- send response
 }
 
 pub fn routes(cfg: &mut web::ServiceConfig) {
-    // curl -i -H 'Content-Type: application/json' -d '{"name": "Test user", "number": 100}' -X POST https://localhost:8443/json
     // curl https://localhost:8443/handlers/str
     cfg.service(responder_str);
     // curl https://localhost:8443/handlers/string
@@ -88,4 +88,6 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
     cfg.service(responder_impl_responder);
     // curl https://localhost:8443/handlers/custom_responder
     cfg.service(responder_custom_responder);
+    // curl -i -H 'Content-Type: application/json' -d '{"name": "Test user", "number": 100}' -X POST https://localhost:8443/handlers/extractor
+    cfg.service(extractor);
 }
