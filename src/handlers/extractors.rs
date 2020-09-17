@@ -6,12 +6,12 @@ use serde::Deserialize;
 /// {friend} - deserializes to a String
 
 #[get("/users/{user_id}/{friend}")] // <- define path parameters
-pub async fn user_info(web::Path((user_id, friend)): web::Path<(u32, String)>) -> Result<String> {
+async fn user_info(web::Path((user_id, friend)): web::Path<(u32, String)>) -> Result<String> {
     Ok(format!("Welcome {}, user_id {}!", friend, user_id))
 }
 
 #[derive(Deserialize)]
-pub struct Info {
+struct Info {
     user_id: u32,
     friend: String,
 }

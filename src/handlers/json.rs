@@ -17,29 +17,29 @@ use futures::future::{ready, Ready};
 use serde::{Deserialize, Serialize};
 
 #[get("/str")]
-pub async fn responder_str() -> &'static str {
+async fn responder_str() -> &'static str {
     "Responder &'static str"
 }
 
 #[get("/string")]
-pub async fn responder_string() -> String {
+async fn responder_string() -> String {
     "Responder_string".to_owned()
 }
 
 #[get("/impl_responder")]
-pub async fn responder_impl_responder() -> impl Responder {
+async fn responder_impl_responder() -> impl Responder {
     web::Bytes::from_static(b"responder_impl_responder")
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct MyObj {
+struct MyObj {
     name: String,
     number: i32,
 }
 
 // 自定义 Response
 #[derive(Serialize)]
-pub struct ResponseWrapper<T> {
+struct ResponseWrapper<T> {
     code: i32,
     msg: String,
     data: Option<T>,
@@ -64,7 +64,7 @@ where
 }
 
 #[get("/impl_responder")]
-pub async fn responder_custom_responder() -> impl Responder {
+async fn responder_custom_responder() -> impl Responder {
     ResponseWrapper {
         code: 0,
         msg: "success".to_string(),
@@ -74,14 +74,14 @@ pub async fn responder_custom_responder() -> impl Responder {
 
 /// This handler uses json extractor
 #[post("/extractor")]
-pub async fn extractor(item: web::Json<MyObj>) -> HttpResponse {
+async fn extractor(item: web::Json<MyObj>) -> HttpResponse {
     println!("model: {:?}", &item);
     HttpResponse::Ok().json(item.0) // <- send response
 }
 
 /// This handler uses json extractor with limit
 #[post("/extractor2")]
-pub async fn extract_item(item: web::Json<MyObj>, req: HttpRequest) -> HttpResponse {
+async fn extract_item(item: web::Json<MyObj>, req: HttpRequest) -> HttpResponse {
     println!("request: {:?}", req); //捕获HttpRequset对象内容
     println!("model: {:?}", item);
 

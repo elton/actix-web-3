@@ -1,7 +1,7 @@
 use actix_web::web;
 
-pub mod extractors;
-pub mod json;
+mod extractors;
+mod json;
 
 pub fn routes(cfg: &mut web::ServiceConfig) {
     // curl https://localhost:8443/handlers/str
