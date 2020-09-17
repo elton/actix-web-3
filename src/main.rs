@@ -40,7 +40,6 @@ async fn main() -> std::io::Result<()> {
             .service(application::app_state)
             .service(web::scope("/application").configure(application::routes))
             .service(web::scope("/handlers").configure(handlers::routes))
-            .service(web::scope("/extractors").configure(handlers::routes))
     })
     .bind_openssl("127.0.0.1:8443", builder)?
     .run()

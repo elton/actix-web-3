@@ -18,4 +18,8 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
     cfg.service(json::extract_item);
     // curl https://localhost:8443/handlers/users/10/elton
     cfg.service(extractors::user_info);
+    // curl https://localhost:8443/handlers/users2/10/elton
+    cfg.service(extractors::user_info_serde);
+    // curl https://localhost:8443/handlers/users3/10/elton
+    cfg.service(extractors::user_info_request);
 }
