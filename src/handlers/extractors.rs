@@ -39,7 +39,7 @@ struct FormData {
     username: String,
 }
 
-/// extract form data using serde
+/// extract form data using serde 通过serde来提取提交的表单中的内容
 /// this handler gets called only if the content type is *x-www-form-urlencoded*
 /// and the content of the request could be deserialized to a `FormData` struct
 
