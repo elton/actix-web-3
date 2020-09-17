@@ -1,4 +1,4 @@
-use actix_web::{get, web, HttpRequest, Result};
+use actix_web::{get, post, web, HttpRequest, Result};
 use serde::Deserialize;
 
 /// extract path info from "/users/{userid}/{friend}" url
@@ -32,4 +32,18 @@ async fn user_info_request(req: HttpRequest) -> Result<String> {
     let userid: i32 = req.match_info().query("userid").parse().unwrap();
 
     Ok(format!("Welcome {}, userid {}!", name, userid))
+}
+
+#[derive(Deserialize)]
+struct FormData {
+    username: String,
+}
+
+/// extract form data using serde
+/// this handler gets called only if the content type is *x-www-form-urlencoded*
+/// and the content of the request could be deserialized to a `FormData` struct
+
+#[post("/user")]
+async fn form(form: web::Form<FormData>) -> Result<String> {
+    Ok(format!("Welcome {}!", form.username))
 }

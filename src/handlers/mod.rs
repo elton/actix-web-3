@@ -22,4 +22,6 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
     cfg.service(extractors::user_info_serde);
     // curl https://localhost:8443/handlers/users3/10/elton
     cfg.service(extractors::user_info_request);
+    // curl -i -H 'Content-Type: application/x-www-form-urlencoded' -d 'username="elton zheng"' -X POST https://localhost:8443/handlers/user
+    cfg.service(extractors::form);
 }
