@@ -17,29 +17,29 @@ use futures::future::{ready, Ready};
 use serde::{Deserialize, Serialize};
 
 #[get("/str")]
-async fn responder_str() -> &'static str {
+pub async fn responder_str() -> &'static str {
     "Responder &'static str"
 }
 
 #[get("/string")]
-async fn responder_string() -> String {
+pub async fn responder_string() -> String {
     "Responder_string".to_owned()
 }
 
 #[get("/impl_responder")]
-async fn responder_impl_responder() -> impl Responder {
+pub async fn responder_impl_responder() -> impl Responder {
     web::Bytes::from_static(b"responder_impl_responder")
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct MyObj {
+pub struct MyObj {
     name: String,
     number: i32,
 }
 
 // 自定义 Response
 #[derive(Serialize)]
-struct ResponseWrapper<T> {
+pub struct ResponseWrapper<T> {
     code: i32,
     msg: String,
     data: Option<T>,
@@ -64,7 +64,7 @@ where
 }
 
 #[get("/impl_responder")]
-async fn responder_custom_responder() -> impl Responder {
+pub async fn responder_custom_responder() -> impl Responder {
     ResponseWrapper {
         code: 0,
         msg: "success".to_string(),
@@ -74,20 +74,16 @@ async fn responder_custom_responder() -> impl Responder {
 
 /// This handler uses json extractor
 #[post("/extractor")]
-async fn extractor(item: web::Json<MyObj>) -> HttpResponse {
+pub async fn extractor(item: web::Json<MyObj>) -> HttpResponse {
     println!("model: {:?}", &item);
     HttpResponse::Ok().json(item.0) // <- send response
 }
 
-pub fn routes(cfg: &mut web::ServiceConfig) {
-    // curl https://localhost:8443/handlers/str
-    cfg.service(responder_str);
-    // curl https://localhost:8443/handlers/string
-    cfg.service(responder_string);
-    // curl https://localhost:8443/handlers/impl_responder
-    cfg.service(responder_impl_responder);
-    // curl https://localhost:8443/handlers/custom_responder
-    cfg.service(responder_custom_responder);
-    // curl -i -H 'Content-Type: application/json' -d '{"name": "Test user", "number": 100}' -X POST https://localhost:8443/handlers/extractor
-    cfg.service(extractor);
+/// This handler uses json extractor with limit
+#[post("/extractor2")]
+pub async fn extract_item(item: web::Json<MyObj>, req: HttpRequest) -> HttpResponse {
+    println!("request: {:?}", req); //捕获HttpRequset对象内容
+    println!("model: {:?}", item);
+
+    HttpResponse::Ok().json(item.0) // <- send json response
 }
